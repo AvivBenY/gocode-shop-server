@@ -1,33 +1,65 @@
 import fsp from 'fs/promises'
-import http from 'http'
+import express from 'express'
 
+const app = express();
 
-function readFiles() {
-    fsp.readFile('./translation.jsonasdasd', "utf8")
-    .then(json => {
-        fsp.readFile("./en.txtttt", "utf8").then(en =>{
-            const toJson = JSON.parse(json);
-            console.log("en",en);          
+app.use(express.json());
 
-            const jsonWord = toJson.filter(word => word.en === en)
-            writeFiles("./heb", JSON.stringify(jsonWord[0].heb))          
-        }).catch(err => 
-            console.log("Error:", err))
+function maxId(arr) {
+    const ids = arr.map(object => {
+        return object.id;
+    });
+    const max = Math.max(...ids);
+    return max
+}
+
+app.get("/products", (req, res) => {
+    fsp.readFile('./products.json', 'utf8').then(data => {
+        const jsonData = JSON.parse(data);
+        const stringData = JSON.stringify(jsonData);
+        res.send(stringData);
     })
-    .catch(err => console.log("Error:", err))
-}
+})
 
-function writeFiles(file, data) {
-    fsp.writeFile(`${file}`, `${data}`)
-}
+app.get('/products/:productId', (req, res) => {
+    const { productId } = req.params;
+    fsp.readFile('./products.json', 'utf8').then(data => {
+        const jsonData = JSON.parse(data);
+        const product = jsonData.find((p) => p.id === +productId)
+        if (product) {
+            res.send(product);
+        } else {
+            res.send("cant get product");
+        }
+    })
+})
 
-// Create HTTP server and listen on port 8000 for requests
-http.createServer((request, response) => {
-    readFiles();
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    // Send the response body "Hello World"
-    response.end("success");
- }).listen(8000);
- // Print URL for accessing server
- console.log('Server running at http://127.0.0.1:8000/');
 
+
+app.post('/products', (req, res) => {
+    console.log("req.body", req.body);
+    fsp.readFile('./products.json', 'utf8').then((data) => {
+        const products = JSON.parse(data);
+        const { title } = req.body.title;
+
+        products.push({
+            id: maxId(products) + 1,
+            title: req.body.title,
+            price: req.body.price,
+            description: req.body.description,
+            category: req.body.category,
+            image: req.body.image,
+            rating: {
+                rate: 3.9,
+                count: 120
+
+            }
+        });
+        fsp.writeFile('./products.json', JSON.stringify(products));
+        console.log(req.body);
+        res.send(products)
+    }
+    )
+})
+
+app.listen('8000');
