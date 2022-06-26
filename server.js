@@ -16,17 +16,17 @@ const db = mongoose.model(
 }
 )
 
-//GET - QUERY
-app.get('/products', (req, res) => {
-    const { title } = req.query;
-    if (title) {
-        db.find().then((data) => {
-            const filterProducts = data.filter((p) =>
-                p.title.toLowerCase().includes(title.toLowerCase()))
-            res.send(filterProducts);
-        }).catch((e) => console.log("error", e))
-    } else { res.send(db.find()) }
-})
+// //GET - QUERY
+// app.get('/products', (req, res) => {
+//     const { title } = req.query;
+//     if (title) {
+//         db.find().then((data) => {
+//             const filterProducts = data.filter((p) =>
+//                 p.title.toLowerCase().includes(title.toLowerCase()))
+//             res.send(filterProducts);
+//         }).catch((e) => console.log("error", e))
+//     } else { res.send(db.find()) }
+// })
 
 //GET ALL PRODUCTS
 app.get('/products', (req, res) => {
@@ -72,7 +72,7 @@ app.delete('/products/:id', (req, res) => {
 
 //UPDATE
 app.patch('/products/:id', (req, res) => {
-    const id = req.params;
+    const { id } = req.params;
     console.log("id", id);
     console.log("body", req.body);
     if (id) {
