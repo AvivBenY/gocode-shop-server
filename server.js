@@ -30,7 +30,7 @@ app.get('/products', (req, res) => {
 })
 
 
-READ
+// READ
 app.get("/products", (req, res) => {
     fsp.readFile('./products.json', 'utf8').then(data => {
         const jsonData = JSON.parse(data);
