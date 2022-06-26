@@ -13,6 +13,24 @@ function maxId(arr) {
     return max
 }
 
+//QUERY
+app.get('/products', (req, res) => {
+    fsp.readFile('./products.json', 'utf8').then((data) => {
+        const jsonData = JSON.parse(data);
+        console.log("query", req.query);
+        if (req.query) {
+            const { title } = req.query;
+            const filterProducts = jsonData.filter((p) =>
+                p.title.toLowerCase().includes(title.toLowerCase()))
+            console.log(filterProducts);
+            res.send(filterProducts);
+        }
+        res.send(jsonData)
+    })
+})
+
+
+READ
 app.get("/products", (req, res) => {
     fsp.readFile('./products.json', 'utf8').then(data => {
         const jsonData = JSON.parse(data);
@@ -21,6 +39,7 @@ app.get("/products", (req, res) => {
     })
 })
 
+//READ BY ID
 app.get('/products/:productId', (req, res) => {
     const { productId } = req.params;
     fsp.readFile('./products.json', 'utf8').then(data => {
@@ -35,7 +54,7 @@ app.get('/products/:productId', (req, res) => {
 })
 
 
-
+//CREATE
 app.post('/products', (req, res) => {
     console.log("req.body", req.body);
     fsp.readFile('./products.json', 'utf8').then((data) => {
@@ -61,5 +80,36 @@ app.post('/products', (req, res) => {
     }
     )
 })
+
+//UPDATE
+app.patch('/products/:productId', (req, res) => {
+    const { productId } = req.params;
+    const { title } = req.body;
+    fsp.readFile('./products.json', 'utf8').then((data) => {
+        if (req.body) {
+            const jsonData = JSON.parse(data);
+            const index = jsonData.findIndex((p) => p.id === +productId);
+            jsonData[index] = { ...jsonData[index], ...req.body };
+            console.log("data[index]", jsonData[index]);
+            fsp.writeFile('./products.json', JSON.stringify(jsonData)).then(() => res.send(jsonData))
+        }
+    }).catch((e) => console.log("error"))
+})
+
+//DELETE
+app.delete('/products/:id', (req, res) => {
+    const { id } = req.params;
+    fsp.readFile('./products.json', 'utf8').then((data) => {
+        const jsonData = JSON.parse(data);
+        const index = jsonData.findIndex((p) => p.id === +id);
+        if (index >= 0) {
+            jsonData.splice(index, 1);
+            fsp.writeFile('./products.json', JSON.stringify(jsonData)).then(() => res.send(jsonData));
+            res.send(jsonData);
+        }
+    }).catch((e) => console.log("ERRORRR", e))
+})
+
+
 
 app.listen('8000');
